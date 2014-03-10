@@ -162,12 +162,14 @@ module I18n
         # for all other file extensions.
         def load_file(filename)
           type = File.extname(filename).tr('.', '').downcase
-          raise UnknownFileType.new(type, filename) unless respond_to?(:"load_#{type}", true)
-          data = send(:"load_#{type}", filename)
-          unless data.is_a?(Hash)
-            raise InvalidLocaleData.new(filename, 'expects it to return a hash, but does not')
+          if type == "yml"
+            raise UnknownFileType.new(type, filename) unless respond_to?(:"load_#{type}", true)
+            data = send(:"load_#{type}", filename)
+            unless data.is_a?(Hash)
+              raise InvalidLocaleData.new(filename, 'expects it to return a hash, but does not')
+            end
+            data.each { |locale, d| store_translations(locale, d || {}) }
           end
-          data.each { |locale, d| store_translations(locale, d || {}) }
         end
 
         # Loads a plain Ruby translations file. eval'ing the file must yield
